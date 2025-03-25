@@ -117,9 +117,9 @@ function App() {
 
     return (a.index < b.index ? -1 : 1)
   }
-  function updateCodeState(curr_pos: Loc) {
-    console.log("updatecodestate", currentEditorCode)
-    const newPrograms = samplePrograms(perturb(currentEditorCode, curr_pos), 50).sort(sortSketchRows)
+  function updateCodeState(curr_pos: Loc, currentCode?: string) {
+    console.log("updatecodestate", currentCode ?? currentEditorCode)
+    const newPrograms = samplePrograms(perturb(currentCode ?? currentEditorCode, curr_pos), 50).sort(sortSketchRows)
 
     // .sort((a, b) => a.index > b.index || a.index === 'Special' ? -1 : (a.index < b.index || b.index === 'Special' ? 1 : 0))
     // console.log(newPrograms)
@@ -139,7 +139,7 @@ function App() {
 
     const newStateArray: StateObject[] = [];
     newStateArray.push({
-      sketchCode: currentEditorCode,
+      sketchCode: currentCode ?? currentEditorCode,
       displayName: "",
     })
 
@@ -162,25 +162,28 @@ function App() {
 
     const localSavedCode = localStorage.getItem("savedCode");
     console.log(localSavedCode)
+
     let defaultSketchCode = `function setup() {
-      createCanvas(300, 300);
+  createCanvas(300, 300);
+}
+function draw() {
+  background(220);
+  fill(0, 0, 0, 0);
+  for (let i = 0; i < 10; i++) {
+    for (let j = 0; j < 10; j++) {
+      circle(i * 50, j * 50, frameCount % 200);
     }
-    function draw() {
-      background(220);
-      fill(0, 0, 0, 0)
-      for (let i=0; i<10; i++) {
-        for (let j=0; j<10; j++) {
-          circle(i*50,j*50, frameCount%200)
-        }
-      }
-    }`;
+  }
+}`;
     if (localSavedCode && localSavedCode !== "") {
       defaultSketchCode = JSON.parse(localSavedCode)
     }
 
 
     console.log("SETTING", defaultSketchCode)
-    setCurrentEditorCode(defaultSketchCode);
+    setCurrentEditorCode(() => {
+      return defaultSketchCode
+    });
     console.log("CEC", currentEditorCode);
     // Escape hatch if state gets messed up
     (window as any).resetInterface = () => {
@@ -188,7 +191,7 @@ function App() {
       window.location.reload();
     }
 
-    updateCodeState(curr_pos);
+    updateCodeState(curr_pos, defaultSketchCode);
   }, []);
 
   const firstState = stateArray[0];
@@ -231,6 +234,7 @@ function App() {
                       stateArray={stateArray}
                       state={state}
                       code={state.sketchCode}
+                      delay={0}
                       updateState={updateStateProperty}
                       setNumSketches={setNumSketches}
                       setLastClicked={setLastClicked}

@@ -116,7 +116,7 @@ export const Editor: React.FC<EditorProps> = ({ code, setCurrentEditorCode, upda
     if (editorViewRef.current) redo(editorViewRef.current);
   };
 
-  function valid_hover_highlight(ast: parser.ParseResult, cursor_position: number): {start: number, end: number} | null {
+  function valid_hover_highlight(ast: parser.ParseResult, cursor_position: number): { start: number, end: number } | null {
     let result = null
     try {
       traverse(ast, {
@@ -124,11 +124,11 @@ export const Editor: React.FC<EditorProps> = ({ code, setCurrentEditorCode, upda
           if (path_contains_pos(path, { start: cursor_position, end: cursor_position })) {
             if (path.isNumericLiteral() || path.isBinaryExpression() || path.isDecimalLiteral() || is_param(path)) { // function arguments
               if (!(path.parentPath!.isNumericLiteral() || path.parentPath!.isBinaryExpression() || path.parentPath!.isDecimalLiteral())) {
-                result = {start: path.node.start!, end: path.node.end!}
+                result = { start: path.node.start!, end: path.node.end! }
               }
             } else if (is_function(path) && path.node.type == "CallExpression") { // functions
               if (path.node.callee.type === "Identifier" && command_names.includes(path.node.callee.name)) {
-                result = {'start': path.node.start!, 'end': path.node.end!}
+                result = { 'start': path.node.start!, 'end': path.node.end! }
               }
             }
           }
@@ -264,7 +264,7 @@ export const Editor: React.FC<EditorProps> = ({ code, setCurrentEditorCode, upda
         value={code}
         lang="javascript"
         theme="light"
-        height="300px"
+        height="500px"
         extensions={extensions}
         onUpdate={handleEditorChange}
         onCreateEditor={(view) => (editorViewRef.current = view)}

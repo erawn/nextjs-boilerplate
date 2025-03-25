@@ -53,6 +53,7 @@ export const SketchRow: React.FC<SketchRowProps> = ({ updateState, stateArray, i
 
   const displayName = special ? SPECIAL_ROWS[assignedDisplayName] : assignedDisplayName;
 
+  const delay = index * 200
   return (
     <div className="sketch-row" data-special={special}>
       <div>
@@ -73,6 +74,7 @@ export const SketchRow: React.FC<SketchRowProps> = ({ updateState, stateArray, i
               state={state}
               code={state.sketchCode}
               updateState={updateState}
+              delay={delay}
               setNumSketches={setNumSketches}
               setLastClicked={setLastClicked}
               lastClicked={lastClicked}

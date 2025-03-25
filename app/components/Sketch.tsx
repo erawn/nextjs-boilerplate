@@ -24,13 +24,14 @@ interface SketchProps {
   state: StateObject;
   code: string;
   updateState: <K extends keyof StateObject>(index: number, key: K, value: StateObject[K]) => void;
+  delay: number;
   stateArray: StateObject[];
   setNumSketches: React.Dispatch<React.SetStateAction<number[]>>
   setLastClicked: React.Dispatch<React.SetStateAction<number>>
   lastClicked: number;
 }
 
-export const Sketch: React.FC<SketchProps> = ({ state, code, updateState, stateArray, setNumSketches, setLastClicked, lastClicked }) => {
+export const Sketch: React.FC<SketchProps> = ({ state, code, updateState, delay, stateArray, setNumSketches, setLastClicked, lastClicked }) => {
   const [dims, setDims] = useState<string[]>(['320px', '320px']);
   const [hasError, setHasError] = useState<boolean>(false);
 
@@ -60,7 +61,6 @@ export const Sketch: React.FC<SketchProps> = ({ state, code, updateState, stateA
     return `
     <!doctype html>
       <head>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js" onerror="function() {alert('Error loading ' + this.src);};"></script>
         <style>
           body {
             margin: 0;
@@ -108,6 +108,13 @@ export const Sketch: React.FC<SketchProps> = ({ state, code, updateState, stateA
                 "color: #CC0000; font-weight: normal",
               );
             };
+            var script = w.document.createElement('script');
+
+            script.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js');
+            script.setAttribute('onerror', "function() {alert('Error loading ' + this.src);};")
+
+            window.setTimeout(() => { w.document.head.appendChild(script); }, delay)
+
 
             if (w.document.body) {
               const width = w.document.body.scrollWidth;
@@ -115,14 +122,14 @@ export const Sketch: React.FC<SketchProps> = ({ state, code, updateState, stateA
 
               iframe.style.width = width + "px";
               iframe.style.height = height + "px";
-              
+
 
               const desiredWidth = 150; // in px
 
               const factor = desiredWidth / width;
 
               document.querySelectorAll(".sketch-row .sketch iframe").forEach((el: any) => {
-                  el.style.transform = `scale(${factor}, ${factor})`;
+                el.style.transform = `scale(${factor}, ${factor})`;
               });
 
               document.querySelectorAll(".sketch-row .iframe-wrapper").forEach((el: any) => {
