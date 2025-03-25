@@ -27,35 +27,12 @@ function App() {
   // number of sketches per row should be the number of parameters in a function
   // when user first enters page, there should only be one sketch
 
-  const [localSavedCode, setLocalSavedCode] = useLocalStorage("savedCode", "") //localStorage.getItem("savedCode");
-  console.log(localSavedCode)
-  let defaultSketchCode =
-    `function setup() {
-createCanvas(300, 300);
-}
-function draw() {
-background(220);
-fill(0, 0, 0, 0)
-for (let i=0; i<10; i++) {
-  for (let j=0; j<10; j++) {
-    circle(i*50,j*50, frameCount%200)
-  }
-}
-}`;
-  try {
-    const parsedCode = JSON.parse(localSavedCode);
-    console.log("PARSEDCODE", parsedCode)
-    defaultSketchCode = parsedCode
-    console.log("Newdefaultsketchcode", defaultSketchCode)
-  } catch (error) {
-    console.log(error)
-  }
 
 
   const [stateArray, _setStateArray] = useState<StateObject[]>([]);
   const [numSketches, setNumSketches] = useState<number[]>([]);
   const [lastClicked, setLastClicked] = useState<number>(179);
-  const [currentEditorCode, _setCurrentEditorCode] = useState<string>(defaultSketchCode)
+  const [currentEditorCode, _setCurrentEditorCode] = useState<string>("")
 
   function setStateArray(
     arg: StateObject[] | ((_: StateObject[]) => StateObject[])
@@ -63,11 +40,15 @@ for (let i=0; i<10; i++) {
     _setStateArray((prevArg) => {
       let newArg = typeof arg == "function" ? arg(prevArg) : arg;
       if (newArg && newArg.length > 0 && newArg[0].currentEditorCode) {
-        // localStorage.setItem(
-        //   "savedCode",
-        //   
-        // );
-        setLocalSavedCode(JSON.stringify(newArg[0].currentEditorCode))
+        if (typeof window !== 'undefined') {
+          console.log("set state array", JSON.stringify(newArg[0].currentEditorCode))
+          localStorage.setItem(
+            "savedCode",
+            JSON.stringify(newArg[0].currentEditorCode)
+          );
+          // const item = localStorage.getItem('key)
+        }
+
       }
       return newArg;
     });
@@ -79,11 +60,13 @@ for (let i=0; i<10; i++) {
     _setCurrentEditorCode((prevArg) => {
       let newArg = typeof arg == "function" ? arg(prevArg) : arg;
       if (newArg) {
-        setLocalSavedCode(JSON.stringify(newArg))
-        // localStorage.setItem(
-        //   "savedCode",
-        //   JSON.stringify(newArg)
-        // );
+        if (typeof window !== 'undefined') {
+          console.log("Set LocalStorage", JSON.stringify(newArg))
+          localStorage.setItem(
+            "savedCode",
+            JSON.stringify(newArg)
+          );
+        }
       }
       return newArg;
     });
@@ -135,7 +118,8 @@ for (let i=0; i<10; i++) {
     return (a.index < b.index ? -1 : 1)
   }
   function updateCodeState(curr_pos: Loc) {
-    const newPrograms = samplePrograms(perturb(defaultSketchCode, curr_pos), 50).sort(sortSketchRows)
+    console.log("updatecodestate", currentEditorCode)
+    const newPrograms = samplePrograms(perturb(currentEditorCode, curr_pos), 50).sort(sortSketchRows)
 
     // .sort((a, b) => a.index > b.index || a.index === 'Special' ? -1 : (a.index < b.index || b.index === 'Special' ? 1 : 0))
     // console.log(newPrograms)
@@ -155,7 +139,7 @@ for (let i=0; i<10; i++) {
 
     const newStateArray: StateObject[] = [];
     newStateArray.push({
-      sketchCode: defaultSketchCode,
+      sketchCode: currentEditorCode,
       displayName: "",
     })
 
@@ -174,15 +158,37 @@ for (let i=0; i<10; i++) {
 
     const curr_pos = { start: lastClicked, end: lastClicked } as Loc
 
-    updateCodeState(curr_pos);
 
+
+    const localSavedCode = localStorage.getItem("savedCode");
+    console.log(localSavedCode)
+    let defaultSketchCode = `function setup() {
+      createCanvas(300, 300);
+    }
+    function draw() {
+      background(220);
+      fill(0, 0, 0, 0)
+      for (let i=0; i<10; i++) {
+        for (let j=0; j<10; j++) {
+          circle(i*50,j*50, frameCount%200)
+        }
+      }
+    }`;
+    if (localSavedCode && localSavedCode !== "") {
+      defaultSketchCode = JSON.parse(localSavedCode)
+    }
+
+
+    console.log("SETTING", defaultSketchCode)
+    setCurrentEditorCode(defaultSketchCode);
+    console.log("CEC", currentEditorCode);
     // Escape hatch if state gets messed up
     (window as any).resetInterface = () => {
       localStorage.clear();
       window.location.reload();
     }
 
-
+    updateCodeState(curr_pos);
   }, []);
 
   const firstState = stateArray[0];
